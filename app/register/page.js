@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function RegisterPage() {
     return(
         <div className="container">
@@ -11,6 +13,7 @@ export default function RegisterPage() {
                 <input type="text" placeholder="Surname" required className="form-control p-2 mb-3"></input>
                 <input type="date" placeholder="Date Of Birth" required className="form-control p-2 mb-3"></input>
             </form>
+            <p className="text-center mt-4">Sei già registrato? <Link href="/login">Accedi</Link></p>
         </div>
     )
 }
