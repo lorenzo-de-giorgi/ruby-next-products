@@ -15,6 +15,14 @@ use Rack::Cors do
   end
 end
 
+# Configurazione connessione al Database
+DB = Sequel.connect(
+  adapter: 'postgres',
+  host: 'localhost',
+  database: 'products_db'
+  user: 'postgres',
+  password: '15122004'
+)
 
 post '/login' do
   "Login Button"
