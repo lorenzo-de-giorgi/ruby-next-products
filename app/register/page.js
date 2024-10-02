@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
+import axios from "axios";
 
 export default function RegisterPage() {
     const [username, setUsername] = useState('');
@@ -14,10 +15,48 @@ export default function RegisterPage() {
     const [date_of_birth, setBirthday] = useState('');
     const router = useRouter();
 
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         // console.log per verificare il corretto recupero dei dati
-        console.log(username, email, password, name, surname, date_of_birth);
+        // console.log(username, email, password, name, surname, date_of_birth);
+
+        if(password !== confirmPassword){
+            alert('Le password non corrispondono!');
+            return;
+        }
+
+        const formData = {
+            username,
+            email,
+            password,
+            name,
+            surname,
+            date_of_birth
+        }
+
+        try {
+            const response = await axios.post('http://localhost:4567/register', formData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if(response.status === 200){
+                alert('Registrazione avvenuta con successo!');
+                router.push('/login');
+            } else {
+                alert(`Registration failed: ${response.data.message}`);
+            }
+        } catch (error) {
+            console.error('An error occurred during registration:', error);
+            if (error.response) {
+                // Il server ha restituito una risposta con un codice di stato diverso da 2xx
+                alert(`Registration failed: ${error.response.data.message}`);
+            } else {
+                // Errore nella richiesta
+                alert('An error occurred during registration. Please try again later.');
+            }
+        }
     }
     return(
         <div className="container">
