@@ -75,20 +75,30 @@ end
 
 # Rotta per la registrazione
 post '/register' do
-  # Recupero il corpo della richiesta in JSON
-  data = JSON.parse(request.body.read)
-  # Recupero l'username dalla richiesta
-  username = data["username"]
-  # Recupero l'email dalla richiesta
-  email = data["email"]
-  # Recupero la password dalla richiesta
-  password = data["password"]
-  # Recupero il nome dalla richiesta
-  name = data["name"]
-  # Recupero il cognome dalla richiesta
-  surname = data["surname"]
-  # Recupero la data di nascita dalla richiesta
-  date_of_birth = data["date_of_birth"]
+  begin
+    # Recupero il corpo della richiesta in JSON
+    data = JSON.parse(request.body.read)
+    # Recupero l'username dalla richiesta
+    username = data["username"]
+    # Recupero l'email dalla richiesta
+    email = data["email"]
+    # Recupero la password dalla richiesta
+    password = data["password"]
+    # Recupero il nome dalla richiesta
+    name = data["name"]
+    # Recupero il cognome dalla richiesta
+    surname = data["surname"]
+    # Recupero la data di nascita dalla richiesta
+    date_of_birth = data["date_of_birth"]
+
+    halt 400, json(error: "Tutti i campi devono essere compilati") if username.nil? || email.nil? || password.nil? || name.nil? || surname.nil? || date_of_birth.nil?
+
+  rescue Sequel::UniqueConstraintViolation
+    halt 409, json(error: "Nome utente già in uso")
+  rescue => e
+    status 500
+    json(error: "Errore del server: #{e.message}")
+  end
 end
 
 # Rotta per il login
