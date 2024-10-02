@@ -27,11 +27,11 @@ DB = Sequel.connect(
 # Controllo l'esistenza e creo la tabella "users"
 DB.create_table?(:users) do
   primary_key :id
-  String :username, null: false, unique: true, size: 75
-  String :email, null: false, unique: true, size: 100
-  String :password_hash, null: false, unique: false, size: 25
-  String :name, null: false, size: 20
-  String :surname, null: false, size: 30
+  String :username, null: false, unique: true
+  String :email, null: false, unique: true
+  String :password_hash, null: false, unique: false
+  String :name, null: false
+  String :surname, null: false
   Date :date_of_birth, null: false
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
 end
@@ -54,14 +54,6 @@ end
 # Definisco i modelli
 class User < Sequel::Model
   one_to_many :products
-
-  def password=(password)
-    self.password_hash = BCrypt::Password.create(password)
-  end
-
-  def authenticate(password)
-    BCrypt::Password.new(self.password_hash) == password
-  end
 end
 
 class ProductType < Sequel::Model
@@ -78,28 +70,47 @@ post '/register' do
   begin
     # Recupero il corpo della richiesta in JSON
     data = JSON.parse(request.body.read)
-    # Recupero l'username dalla richiesta
+    # Recupero i dati dalla richiesta
     username = data["username"]
-    # Recupero l'email dalla richiesta
     email = data["email"]
-    # Recupero la password dalla richiesta
-    password = data["password"]
-    # Recupero il nome dalla richiesta
+    password = data["password"]  # Ensure password is retrieved
     name = data["name"]
-    # Recupero il cognome dalla richiesta
     surname = data["surname"]
-    # Recupero la data di nascita dalla richiesta
     date_of_birth = data["date_of_birth"]
 
-    halt 400, json(error: "Tutti i campi devono essere compilati") if username.nil? || email.nil? || password.nil? || name.nil? || surname.nil? || date_of_birth.nil?
+    # Controllo se ci sono campi vuoti
+    if [username, password, name, surname, date_of_birth].any?(&:nil?)
+      halt 400, { error: "Compila tutti i campi richiesti" }.to_json
+    end
+
+    # Hash della password
+    hashed_password = BCrypt::Password.create(password)
+
+    user = User.new(
+      username: username,
+      email: email,
+      password_hash: hashed_password,  # Use the correct column name
+      name: name,
+      surname: surname,
+      date_of_birth: date_of_birth
+    )
+    user.save
+    status 201
+    content_type :json
+    { message: "Registrazione avvenuta con successo." }.to_json
 
   rescue Sequel::UniqueConstraintViolation
-    halt 409, json(error: "Nome utente già in uso")
+    halt 409, { error: "Nome utente o email già in uso." }.to_json
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
   rescue => e
+    puts "Errore del server: #{e.message}"
     status 500
-    json(error: "Errore del server: #{e.message}")
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
   end
 end
+
 
 # Rotta per il login
 post '/login' do
