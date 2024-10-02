@@ -51,10 +51,6 @@ DB.create_table?(:products) do
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
 end
 
-post '/login' do
-  "Login Button"
-end
-
 # Definisco i modelli
 class User < Sequel::Model
   one_to_many :products
@@ -77,6 +73,25 @@ class Product < Sequel::Model
   one_to_one :product_type
 end
 
+# Rotta per la registrazione
 post '/register' do
-  "Register Button"
+  # Recupero il corpo della richiesta in JSON
+  data = JSON.parse(request.body.read)
+  # Recupero l'username dalla richiesta
+  username = data["username"]
+  # Recupero l'email dalla richiesta
+  email = data["email"]
+  # Recupero la password dalla richiesta
+  password = data["password"]
+  # Recupero il nome dalla richiesta
+  name = data["name"]
+  # Recupero il cognome dalla richiesta
+  surname = data["surname"]
+  # Recupero la data di nascita dalla richiesta
+  date_of_birth = data["date_of_birth"]
+end
+
+# Rotta per il login
+post '/login' do
+  "Login Button"
 end
