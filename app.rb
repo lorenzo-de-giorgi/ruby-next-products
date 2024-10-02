@@ -55,6 +55,28 @@ post '/login' do
   "Login Button"
 end
 
+# Definisco i modelli
+class User < Sequel::Model
+  one_to_many :products
+
+  def password=(password)
+    self.password_hash = BCrypt::Password.create(password)
+  end
+
+  def authenticate(password)
+    BCrypt::Password.new(self.password_hash) == password
+  end
+end
+
+class ProductType < Sequel::Model
+  one_to_one :product
+end
+
+class Product < Sequel::Model
+  many_to_one :user
+  one_to_one :product_type
+end
+
 post '/register' do
   "Register Button"
 end
