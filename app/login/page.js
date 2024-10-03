@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "react-bootstrap";
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const router = useRouter();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -23,6 +24,7 @@ export default function LoginPage() {
         if (result?.error) {
             alert(`Login fallito: ${result.error}`);
         } else {
+            router.push('/products')
             alert('Login avvenuto con successo!');
         }
     }
