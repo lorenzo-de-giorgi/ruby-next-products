@@ -7,6 +7,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './lib/fontawesome';
 import { SessionProvider, useSession } from 'next-auth/react';
 import LogoutButton from './components/LogoutButton';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 
 export const logout = async () => {
   try {
@@ -53,8 +56,9 @@ function NavBar() {
     <nav className='d-flex justify-content-end mt-3'>
       {session ? (
         <>
-          <span className='me-3'>Benvenuto, {session.user.name}</span>
-          <LogoutButton />
+          <DropdownButton id="dropdown-basic-button" title={session.user.name} className='me-5 pe-3'>
+            <Dropdown.Item href="#/action-1" className='text-center'><LogoutButton /></Dropdown.Item>
+          </DropdownButton>
         </>
       ) : (
         <>
