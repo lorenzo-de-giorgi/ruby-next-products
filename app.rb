@@ -47,6 +47,10 @@ end
 # Controllo l'esistenza e creo la tabella "products"
 DB.create_table?(:products) do
   primary_key :id
+  # collegamento con l'id utente
+  foreign_key :user_id, :users, null:false, on_delete: :cascade
+  # collegamento con l'id del prodotto
+  foreign_key :product_type_id, :product_types, null: false, unique: true, on_delete: :cascade
   String :name, null: false, size: 50
   String :description, null: false, size: 255
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
