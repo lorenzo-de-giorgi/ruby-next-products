@@ -4,6 +4,7 @@
 import './globals.css';
 import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './lib/fontawesome';
 import { SessionProvider, useSession } from 'next-auth/react';
 import LogoutButton from './components/LogoutButton';
 
