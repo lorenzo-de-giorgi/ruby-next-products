@@ -1,4 +1,5 @@
 require "sinatra"
+require "sinatra/json"
 require "sequel"
 require "bcrypt"
 require "json"
@@ -54,6 +55,10 @@ end
 # Definisco i modelli
 class User < Sequel::Model
   one_to_many :products
+
+  def authenticate(password)
+    BCrypt::Password.new(self.password_hash) == password
+  end
 end
 
 class ProductType < Sequel::Model
@@ -114,5 +119,27 @@ end
 
 # Rotta per il login
 post '/login' do
-  "Login Button"
+  begin
+    data = JSON.parse(request.body.read)
+    username = data["username"]
+    password = data["password"]
+
+    halt 400, json(error: "Username e password sono richiesti") if username.nil? || password.nil?
+
+    user = User.find(username: username)
+    if user&.authenticate(password)
+      status 200
+      json(message: "Login avvenuto con successo")
+    else
+      halt 401, json(error: "Username o password non validi")
+    end
+
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end  
 end
