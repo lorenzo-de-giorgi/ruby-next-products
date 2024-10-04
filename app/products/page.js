@@ -1,8 +1,28 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faEye, faPen } from '@fortawesome/free-solid-svg-icons';
 
 export default function Inventory() {
+    const router = useRouter();
+    const { data: session, status } = useSession();
+
+    useEffect(() => {
+        if(status === "loading") return;
+        if(!session) router.push('/login');
+    }, [session, status, router]);
+
+    if (status === "loading") {
+        return <div>Caricamento...</div>
+    }
+
+    if (!session) {
+        return null; // This will prevent the page content from flashing before redirect
+    }
     return(
         <div className="container">
             <h1 className="text-center">Inventario</h1>
