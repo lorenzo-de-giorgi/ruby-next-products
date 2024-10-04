@@ -92,6 +92,17 @@ post '/register' do
       halt 400, { error: "Compila tutti i campi richiesti" }.to_json
     end
 
+    # Controllo validità password
+    if password.length < 8
+      halt 400, json(error: "La password deve essere di lunghezza maggiore di 8 carateeri")
+      # controllo che ci sia almeno una lettera maiuscola
+    elsif password !~ /[A-Z]/
+      halt 400, json(error: "La password deve contenere almeno una lettera maiuscola")
+      # controllo che ci sia almeno un carattere non alfanumerico
+    elsif password !~ /[\W_]/
+      halt 400, json(error: "La password deve avere almeno un carattere speciale")
+    end
+
     # Hash della password
     hashed_password = BCrypt::Password.create(password)
 
