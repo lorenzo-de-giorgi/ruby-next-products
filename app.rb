@@ -158,3 +158,40 @@ post '/login' do
     { error: "Errore del server: #{e.message}" }.to_json
   end  
 end
+
+post '/create_product' do
+  begin
+    data = JSON.parse(request.body.read);
+    user_id = data["user_id"];
+    product_type_id = data["product_type_id"];
+    name = data["name"];
+    description = data["description"];
+
+    product = Product.create(
+      user_id: user_id,
+      product_type_id: product_type_id,
+      name: name,
+      description: description
+    );
+
+    status 201
+    {
+      message: "Prodotto creato con successo",
+      product: {
+        id: product.id,
+        user_id: product.user_id,
+        product_type_id: product.product_type_id,
+        name: product.name,
+        description: product.description
+      }
+    }.to_json
+
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
