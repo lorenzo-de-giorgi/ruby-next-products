@@ -195,3 +195,21 @@ post '/create_product' do
     { error: "Errore del server: #{e.message}" }.to_json
   end
 end
+
+get '/product_types' do
+  begin
+    product_types = DB[:product_types].all
+
+    content_type :json
+    status 200  # Stato di successo
+    product_types.to_json 
+
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end  
+end
