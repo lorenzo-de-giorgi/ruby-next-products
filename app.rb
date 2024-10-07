@@ -68,12 +68,12 @@ class User < Sequel::Model
 end
 
 class ProductType < Sequel::Model
-  one_to_one :product
+  one_to_many :product
 end
 
 class Product < Sequel::Model
   many_to_one :user
-  one_to_one :product_type
+  many_to_one :product_type
 end
 
 # Rotta per la registrazione
@@ -201,6 +201,32 @@ post '/create_product' do
       }
     }.to_json
 
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
+
+# Rotta per recuperare tutti i products
+get '/products' do
+  begin
+    products = Product.eager(:product_type, :user).all.map do |product|
+      {
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        category: product.product_type&.type,
+        user: product.user&.username,
+        created_at: product.created_at
+      }
+    end
+    content_type :json
+    status 200
+    products.to_json
   rescue JSON::ParserError => e
     halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
   rescue => e
