@@ -101,6 +101,24 @@ export default function Inventory() {
         }
     }
 
+    const handleProductDelete = async (productId) => {
+        if(window.confirm("Sei sicuro di voler cancellare questo prodotto?")){
+            try {
+                const response = await axios.delete(`http://localhos:4567/delete_product/${productId}`);
+                if (response.status === 204) {
+                    alert('Prodotto eliminato con successo');
+                    // Ricarica i prodotti o aggiorna lo stato
+                    setProducts(products.filter(product => product.id !== productId));
+                } else {
+                    alert(`Errore: ${response.data.error}`);
+                }
+            } catch (error) {
+                console.error("Errore durante l'eliminazione del prodotto", error);
+                alert("Errore durante l'eliminazione del prodotto");
+            }
+        }
+    }
+
     if (status === "loading") {
         return <div>Caricamento...</div>
     }
@@ -166,7 +184,7 @@ export default function Inventory() {
                             <td>
                                 <Button variant="secondary" className="me-2"><FontAwesomeIcon icon={faEye} /></Button>
                                 <Button variant="warning" className="me-2"><FontAwesomeIcon icon={faPen} /></Button>
-                                <Button variant="danger"><FontAwesomeIcon icon={faTrash} /></Button>
+                                <Button variant="danger" onClick={() => handleProductDelete(product.id)}><FontAwesomeIcon icon={faTrash} /></Button>
                             </td>
                     </tr>
                     ))}
