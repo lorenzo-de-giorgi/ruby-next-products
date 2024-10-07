@@ -30,7 +30,7 @@ DB.create_table?(:users) do
   primary_key :id
   String :username, null: false, unique: true
   String :email, null: false, unique: true
-  String :password_hash, null: false, unique: false
+  String :password_hash, null: false
   String :name, null: false
   String :surname, null: false
   Date :date_of_birth, null: false
@@ -47,16 +47,14 @@ end
 # Controllo l'esistenza e creo la tabella "products"
 DB.create_table?(:products) do
   primary_key :id
-  # collegamento con l'id utente
-  foreign_key :user_id, :users, null:false, on_delete: :cascade
-  # collegamento con l'id del prodotto
-  foreign_key :product_type_id, :product_types, null: false, unique: true, on_delete: :cascade
+  foreign_key :user_id, :users, null: false, on_delete: :cascade
+  foreign_key :product_type_id, :product_types, null: false, on_delete: :cascade
   String :name, null: false, size: 50
   String :description, null: false, size: 255
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
 end
 
-# Definisco i modelli
+# Definizione dei modelli
 class User < Sequel::Model
   one_to_many :products
 
@@ -77,39 +75,32 @@ end
 # Rotta per la registrazione
 post '/register' do
   begin
-    # Recupero il corpo della richiesta in JSON
     data = JSON.parse(request.body.read)
-    # Recupero i dati dalla richiesta
     username = data["username"]
     email = data["email"]
-    password = data["password"]  # Ensure password is retrieved
+    password = data["password"]
     name = data["name"]
     surname = data["surname"]
     date_of_birth = data["date_of_birth"]
 
-    # Controllo se ci sono campi vuoti
     if [username, password, name, surname, date_of_birth].any?(&:nil?)
       halt 400, { error: "Compila tutti i campi richiesti" }.to_json
     end
 
-    # Controllo validità password
     if password.length < 8
-      halt 400, json(error: "La password deve essere di lunghezza maggiore di 8 carateeri")
-      # controllo che ci sia almeno una lettera maiuscola
+      halt 400, json(error: "La password deve essere di lunghezza maggiore di 8 caratteri")
     elsif password !~ /[A-Z]/
       halt 400, json(error: "La password deve contenere almeno una lettera maiuscola")
-      # controllo che ci sia almeno un carattere non alfanumerico
     elsif password !~ /[\W_]/
       halt 400, json(error: "La password deve avere almeno un carattere speciale")
     end
 
-    # Hash della password
     hashed_password = BCrypt::Password.create(password)
 
     user = User.new(
       username: username,
       email: email,
-      password_hash: hashed_password,  # Use the correct column name
+      password_hash: hashed_password,
       name: name,
       surname: surname,
       date_of_birth: date_of_birth
@@ -131,7 +122,6 @@ post '/register' do
   end
 end
 
-
 # Rotta per il login
 post '/login' do
   begin
@@ -141,7 +131,7 @@ post '/login' do
 
     halt 400, json(error: "Username e password sono richiesti") if username.nil? || password.nil?
 
-    user = User.find(username: username)
+    user = User.where(username: username).first
     if user&.authenticate(password)
       status 200
       json(message: "Login avvenuto con successo")
@@ -159,20 +149,47 @@ post '/login' do
   end  
 end
 
+# Rotta per ottenere i tipi di prodotto
+get '/product_types' do
+  begin
+    product_types = DB[:product_types].all
+    content_type :json
+    status 200
+    product_types.to_json
+
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end  
+end
+
+# Rotta per la creazione di un prodotto
 post '/create_product' do
   begin
-    data = JSON.parse(request.body.read);
-    user_id = data["user_id"];
-    product_type_id = data["product_type_id"];
-    name = data["name"];
-    description = data["description"];
+    data = JSON.parse(request.body.read)
+    user_id = data["user_id"]
+    product_type_id = data["product_type_id"]
+    name = data["name"]
+    description = data["description"]
 
-    product = Product.create(
+    # Controllo per verificare se esiste già un record con lo stesso `product_type_id`
+    existing_product = Product.where(product_type_id: product_type_id).first
+    if existing_product
+      halt 409, { error: "Un prodotto con questo product_type_id esiste già" }.to_json
+    end
+
+    # Creazione del prodotto
+    product = Product.new(
       user_id: user_id,
       product_type_id: product_type_id,
       name: name,
       description: description
-    );
+    )
+    product.save
 
     status 201
     {
@@ -194,22 +211,4 @@ post '/create_product' do
     content_type :json
     { error: "Errore del server: #{e.message}" }.to_json
   end
-end
-
-get '/product_types' do
-  begin
-    product_types = DB[:product_types].all
-
-    content_type :json
-    status 200  # Stato di successo
-    product_types.to_json 
-
-  rescue JSON::ParserError => e
-    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
-  rescue => e
-    puts "Errore del server: #{e.message}"
-    status 500
-    content_type :json
-    { error: "Errore del server: #{e.message}" }.to_json
-  end  
 end
