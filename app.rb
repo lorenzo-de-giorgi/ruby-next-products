@@ -236,3 +236,25 @@ get '/products' do
     { error: "Errore del server: #{e.message}" }.to_json
   end
 end
+
+delete '/delete_product/:id' do
+  begin
+    product_id = params[:id].to_i
+
+    product = Product[product_id]
+
+    if product.nil?
+      halt 404, { error: "Prodotto non trovato" }.to_json
+    end
+
+    product.delete
+    status 204
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
