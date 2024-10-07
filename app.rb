@@ -54,9 +54,9 @@ DB.create_table?(:products) do
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
 end
 
-DB.alter_table(:products) do
-  drop_constraint(:products_product_type_id_key, if_exists: true)
-end
+# DB.alter_table(:products) do
+#   drop_constraint(:products_product_type_id_key, if_exists: true)
+# end
 
 # Definizione dei modelli
 class User < Sequel::Model
