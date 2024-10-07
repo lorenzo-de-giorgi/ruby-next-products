@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Button, Offcanvas } from "react-bootstrap";
+import { Button, Offcanvas, FormSelect } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faEye, faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
@@ -25,8 +25,8 @@ export default function Inventory() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const handleSelectChange = (event) => {
-        setSelectedType(event.target.value);
+    const handleSelectChange = (e) => {
+        setSelectedType(e.target.value);
     };
 
     useEffect(() => {
@@ -60,6 +60,51 @@ export default function Inventory() {
 
     }, [session, status, router]);
 
+    const handleProductCreation = async (e) => {
+        e.preventDefault();
+
+        if (!name || !description || !selectedType) {
+            alert("Compila tutti i campi obbligatori");
+            return;
+        }
+
+        if (!name || !description || !selectedType) {
+            alert("Compila tutti i campi obbligatori");
+            return;
+        }
+
+        try {
+            // Ottienengo user_id dalla sessione
+            const userId = session.user.id;
+
+            const productData = {
+            user_id: userId,
+            product_type_id: selectedType,
+            name: name,
+            description: description
+            };
+
+            // Invio della richiesta al server
+            const response = await axios.post('http://localhost:4567/create_product', productData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            // Gestisci la risposta del server
+            if (response.status === 201) {
+            alert('Prodotto creato con successo');
+            handleClose(); // Chiudi l'Offcanvas dopo il successo
+            router.reload(); // Ricarica la pagina o aggiorna la lista dei prodotti
+            } else {
+            alert(`Errore: ${response.data.error}`);
+            }
+        } catch (error) {
+            console.error("Errore durante la creazione del prodotto", error);
+            alert("Errore durante la creazione del prodotto");
+        }
+    }
+
     if (status === "loading") {
         return <div>Caricamento...</div>
     }
@@ -90,16 +135,16 @@ export default function Inventory() {
                             <div className="mb-3">
                                 <label htmlFor="productCategory" className="form-label">Seleziona Tipo *</label>
                                 <br></br>
-                                <select id="productTypeSelect" value={selectedType} onChange={handleSelectChange}>
+                                <FormSelect id="productTypeSelect" value={selectedType} onChange={handleSelectChange}>
                                     <option value="">Scegli un tipo</option> {/* Opzione di default */}
                                     {productTypes.map((type) => (
                                         <option key={type.id} value={type.id}>{type.type}</option>
                                     ))}
-                                </select>
+                                </FormSelect>
                                 {/* Mostra il tipo selezionato */}
                                 {selectedType && <div>Tipo di prodotto selezionato: {selectedType}</div>}
                             </div>
-                            <Button variant="primary" type="submit">Aggiungi</Button>
+                            <Button onClick={handleProductCreation} variant="primary" type="submit">Aggiungi</Button>
                         </form>
                     </Offcanvas.Body>
                 </Offcanvas>
