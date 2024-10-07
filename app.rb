@@ -54,6 +54,10 @@ DB.create_table?(:products) do
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
 end
 
+DB.alter_table(:products) do
+  drop_constraint(:products_product_type_id_key, if_exists: true)
+end
+
 # Definizione dei modelli
 class User < Sequel::Model
   one_to_many :products
@@ -175,12 +179,6 @@ post '/create_product' do
     product_type_id = data["product_type_id"]
     name = data["name"]
     description = data["description"]
-
-    # Controllo per verificare se esiste già un record con lo stesso `product_type_id`
-    existing_product = Product.where(product_type_id: product_type_id).first
-    if existing_product
-      halt 409, { error: "Un prodotto con questo product_type_id esiste già" }.to_json
-    end
 
     # Creazione del prodotto
     product = Product.new(
