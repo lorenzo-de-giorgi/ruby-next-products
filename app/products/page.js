@@ -12,7 +12,7 @@ import axios from "axios";
 export default function Inventory() {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('');
+    const [products, setProducts] = useState([]);
     const [selectedType, setSelectedType] = useState('');
     const [productTypes, setProductTypes] = useState([]);
 
@@ -35,28 +35,24 @@ export default function Inventory() {
 
         const fetchProductTypes = async () => {
             try {
-                const response = await fetch('http://localhost:4567/product_types', {
-                    method: 'GET', // Usa POST se stai seguendo il tuo design
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error('Errore nella risposta del server');
-                }
-
-                const data = await response.json();
-                // console.log(data);
-                setProductTypes(data);
+                const response = await axios.get('http://localhost:4567/product_types');
+                setProductTypes(response.data);
             } catch (err) {
                 setError(err.message);
-            } finally {
-                setLoading(false);
+            }
+        };
+
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get('http://localhost:4567/products');
+                setProducts(response.data);
+            } catch (err) {
+                setError(err.message);
             }
         };
 
         fetchProductTypes();
+        fetchProducts(); 
 
     }, [session, status, router]);
 
@@ -112,6 +108,7 @@ export default function Inventory() {
     if (!session) {
         return null; // This will prevent the page content from flashing before redirect
     }
+    
     return(
         <div className="container">
             <h1 className="text-center">Inventario</h1>
@@ -160,25 +157,19 @@ export default function Inventory() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>
-                            1
-                        </td>
-                        <td>
-                            TV
-                        </td>
-                        <td>
-                            Televisore Samsung 55"
-                        </td>
-                        <td>
-                            Elettronica
-                        </td>
-                        <td>
-                            <Button variant="secondary" className="me-2"><FontAwesomeIcon icon={faEye} /></Button>
-                            <Button variant="warning" className="me-2"><FontAwesomeIcon icon={faPen} /></Button>
-                            <Button variant="danger"><FontAwesomeIcon icon={faTrash} /></Button>
-                        </td>
+                    {products.map((product) => (
+                        <tr key={product.id}>
+                            <td>{product.id}</td>
+                            <td>{product.name}</td>
+                            <td>{product.description}</td>
+                            <td>{product.category}</td>
+                            <td>
+                                <Button variant="secondary" className="me-2"><FontAwesomeIcon icon={faEye} /></Button>
+                                <Button variant="warning" className="me-2"><FontAwesomeIcon icon={faPen} /></Button>
+                                <Button variant="danger"><FontAwesomeIcon icon={faTrash} /></Button>
+                            </td>
                     </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
