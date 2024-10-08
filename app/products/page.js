@@ -8,6 +8,7 @@ import { Button, Offcanvas, FormSelect, Modal } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faEye, faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
+import Link from "next/link";
 
 export default function Inventory() {
     const [name, setName] = useState('');
@@ -250,7 +251,8 @@ export default function Inventory() {
                             <td>{product.description}</td>
                             <td>{product.category}</td>
                             <td>
-                                <Button variant="secondary" onClick={() => handleShowDetail(product)} className="me-2"><FontAwesomeIcon icon={faEye} /></Button>
+                            {/* onClick={() => handleShowDetail(product)} */}
+                                <Link href={`/products/${product.id}`}><Button variant="secondary" className="me-2"><FontAwesomeIcon icon={faEye} /></Button></Link>
                                 <Button variant="warning" onClick={() => handleShow(product)} className="me-2"><FontAwesomeIcon icon={faPen} /></Button>
                                 <Button variant="danger" onClick={() => handleProductDelete(product.id)}><FontAwesomeIcon icon={faTrash} /></Button>
                             </td>
