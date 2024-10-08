@@ -237,6 +237,54 @@ get '/products' do
   end
 end
 
+
+put '/update_product/:id' do
+  begin
+    product_id = params[:id].to_i
+    data = JSON.parse(request.body.read)
+
+    user_id = data["user_id"]
+    product_type_id = data["product_type_id"]
+    name = data["name"]
+    description = data["description"]
+
+    product = Product[product_id]
+
+    if product.nil?
+      halt 404, { error: "Prodotto non trovato" }.to_json
+    end
+
+    product.update(
+      user_id: user_id,
+      product_type_id: product_type_id,
+      name: name,
+      description: description
+    )
+
+    status 200
+    {
+      message: "Prodotto aggiornato con successo",
+      product: {
+        id: product.id,
+        user_id: product.user_id,
+        product_type_id: product.product_type_id,
+        name: product.name,
+        description: product.description
+      }
+    }.to_json
+
+  rescue Sequel::ValidationFailed => e
+    halt 422, { error: "Validazione fallita: #{e.message}" }.to_json
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
+
 delete '/delete_product/:id' do
   begin
     product_id = params[:id].to_i
