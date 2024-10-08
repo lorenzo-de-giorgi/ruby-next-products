@@ -237,6 +237,33 @@ get '/products' do
   end
 end
 
+get '/products/:id' do
+  begin
+
+    product_id = params[:id].to_i
+    product = Product.eager(:product_type, :user)[product_id]
+
+    if product.nil?
+      halt 404, { error: "Prodotto non trovato" }.to_json
+    end
+
+    # Restituisce i dettagli del prodotto
+    {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      category: product.product_type&.type,
+      user: product.user&.username,
+      created_at: product.created_at
+    }.to_json
+    
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end  
+end
 
 put '/update_product/:id' do
   begin
