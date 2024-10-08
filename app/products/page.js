@@ -272,9 +272,9 @@ export default function Inventory() {
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleDetailClose}>
-                        Chiudi
-                    </Button>
+                    {/* <Button variant="warning" onClick={() => handleShow(selectedProduct)} className="me-2"><FontAwesomeIcon icon={faPen} /></Button> */}
+                    <Button variant="danger" onClick={() => handleProductDelete(selectedProduct.id)}><FontAwesomeIcon icon={faTrash} /></Button>
+                    <Button variant="secondary" onClick={handleDetailClose}>Chiudi</Button>
                 </Modal.Footer>
             </Modal>
         </div>
