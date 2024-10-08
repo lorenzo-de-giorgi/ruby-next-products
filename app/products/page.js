@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Button, Offcanvas, FormSelect } from "react-bootstrap";
+import { Button, Offcanvas, FormSelect, Modal } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faEye, faPen, faPlus } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
@@ -16,6 +16,9 @@ export default function Inventory() {
     const [selectedType, setSelectedType] = useState('');
     const [productTypes, setProductTypes] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [showDetail, setShowDetail] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const router = useRouter();
     const { data: session, status } = useSession();
@@ -36,8 +39,12 @@ export default function Inventory() {
         }
         setShow(true);
     }
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+
+    const handleDetailClose = () => setShowDetail(false); // Close detail modal
+    const handleShowDetail = (product) => {
+        setSelectedProduct(product);
+        setShowDetail(true);
+    };
 
     const handleSelectChange = (e) => {
         setSelectedType(e.target.value);
@@ -243,7 +250,7 @@ export default function Inventory() {
                             <td>{product.description}</td>
                             <td>{product.category}</td>
                             <td>
-                                <Button variant="secondary" className="me-2"><FontAwesomeIcon icon={faEye} /></Button>
+                                <Button variant="secondary" onClick={() => handleShowDetail(product)} className="me-2"><FontAwesomeIcon icon={faEye} /></Button>
                                 <Button variant="warning" onClick={() => handleShow(product)} className="me-2"><FontAwesomeIcon icon={faPen} /></Button>
                                 <Button variant="danger" onClick={() => handleProductDelete(product.id)}><FontAwesomeIcon icon={faTrash} /></Button>
                             </td>
@@ -251,6 +258,25 @@ export default function Inventory() {
                     ))}
                 </tbody>
             </table>
+            <Modal show={showDetail} onHide={handleDetailClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Dettagli Prodotto</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {selectedProduct && (
+                        <div>
+                            <h5>Nome: {selectedProduct.name}</h5>
+                            <p><strong>Descrizione:</strong> {selectedProduct.description}</p>
+                            <p><strong>Categoria:</strong> {selectedProduct.category}</p>
+                        </div>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleDetailClose}>
+                        Chiudi
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     )
 }
