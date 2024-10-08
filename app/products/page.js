@@ -15,13 +15,27 @@ export default function Inventory() {
     const [products, setProducts] = useState([]);
     const [selectedType, setSelectedType] = useState('');
     const [productTypes, setProductTypes] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const router = useRouter();
     const { data: session, status } = useSession();
 
     const [show, setShow] = useState(false); // Stato per gestire la visibilità dell'Offcanvas
     const handleClose = () => setShow(false); // Funzione per chiudere l'Offcanvas
-    const handleShow = () => setShow(true);
+    const handleShow = ( product = null ) => {
+        if(product){
+            setName(product.name);
+            setDescription(product.description);
+            setSelectedType(product.category);
+            setSelectedProduct(product);
+        } else {
+            setName('');
+            setDescription('');
+            setSelectedType('');
+            setSelectedProduct('');
+        }
+        setShow(true);
+    }
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -101,6 +115,53 @@ export default function Inventory() {
         }
     }
 
+    const handleProductUpdate = async (e) => {
+        e.preventDefault();
+
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get('http://localhost:4567/products');
+                setProducts(response.data);
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+
+        if (!name || !description || !selectedType) {
+            alert("Compila tutti i campi obbligatori");
+            return;
+        }
+
+        try {
+            const userId = session.user.id;
+
+            const productData = {
+                user_id: userId,
+                product_type_id: selectedType,
+                name: name,
+                description: description
+            };
+
+            const response = await axios.put(`http://localhost:4567/update_product/${selectedProduct.id}`, productData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.status === 200) {
+                alert('Prodotto aggiornato con successo');
+                handleClose();
+                fetchProducts();
+            } else {
+                alert(`Errore: ${response.data.error}`);
+            }
+        } catch (error) {
+            console.error("Errore durante l'aggiornamento del prodotto", error);
+            alert("Errore durante l'aggiornamento del prodotto");
+        }
+
+    }
+
     const handleProductDelete = async (productId) => {
         if(window.confirm("Sei sicuro di voler cancellare questo prodotto?")){
             try {
@@ -134,10 +195,9 @@ export default function Inventory() {
                 <Button onClick={handleShow}><FontAwesomeIcon icon={faPlus} /></Button>
                 <Offcanvas show={show} onHide={handleClose} placement="end">
                     <Offcanvas.Header closeButton>
-                        <Offcanvas.Title>Aggiungi Prodotto</Offcanvas.Title>
+                        <Offcanvas.Title>{selectedProduct ? "Modifica Prodotto" : "Aggiungi Prodotto"}</Offcanvas.Title>
                     </Offcanvas.Header>
                     <Offcanvas.Body>
-                        {/* Inserisci qui il contenuto dell'Offcanvas */}
                         <form>
                             <div className="mb-3">
                                 <label htmlFor="productName" className="form-label">Nome Prodotto *</label>
@@ -151,15 +211,16 @@ export default function Inventory() {
                                 <label htmlFor="productCategory" className="form-label">Seleziona Tipo *</label>
                                 <br></br>
                                 <FormSelect id="productTypeSelect" value={selectedType} onChange={handleSelectChange}>
-                                    <option value="">Scegli un tipo</option> {/* Opzione di default */}
+                                    <option value="">Scegli un tipo</option>
                                     {productTypes.map((type) => (
                                         <option key={type.id} value={type.id}>{type.type}</option>
                                     ))}
                                 </FormSelect>
-                                {/* Mostra il tipo selezionato */}
                                 {selectedType && <div>Tipo di prodotto selezionato: {selectedType}</div>}
                             </div>
-                            <Button onClick={handleProductCreation} variant="primary" type="submit">Aggiungi</Button>
+                            <Button onClick={selectedProduct ? handleProductUpdate : handleProductCreation} variant="primary" type="submit">
+                                {selectedProduct ? "Salva" : "Aggiungi"}
+                            </Button>
                         </form>
                     </Offcanvas.Body>
                 </Offcanvas>
@@ -183,7 +244,7 @@ export default function Inventory() {
                             <td>{product.category}</td>
                             <td>
                                 <Button variant="secondary" className="me-2"><FontAwesomeIcon icon={faEye} /></Button>
-                                <Button variant="warning" className="me-2"><FontAwesomeIcon icon={faPen} /></Button>
+                                <Button variant="warning" onClick={() => handleShow(product)} className="me-2"><FontAwesomeIcon icon={faPen} /></Button>
                                 <Button variant="danger" onClick={() => handleProductDelete(product.id)}><FontAwesomeIcon icon={faTrash} /></Button>
                             </td>
                     </tr>
