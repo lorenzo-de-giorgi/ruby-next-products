@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './lib/fontawesome';
 import { SessionProvider, useSession } from 'next-auth/react';
 import LogoutButton from './components/LogoutButton';
+import DeleteAccountButton from './components/DeleteAccountButton';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -58,6 +59,7 @@ function NavBar() {
         <>
           <DropdownButton id="dropdown-basic-button" title={session.user.name} className='me-5 pe-3'>
             <Dropdown.Item href="#/action-1" className='text-center'><LogoutButton /></Dropdown.Item>
+            <Dropdown.Item href="" className='text-center'><DeleteAccountButton /></Dropdown.Item>
           </DropdownButton>
         </>
       ) : (
