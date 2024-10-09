@@ -12,6 +12,7 @@ use Rack::Cors do
     resource '*',
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
+      credentials: true,
       max_age: 600
   end
 end
