@@ -333,3 +333,30 @@ delete '/delete_product/:id' do
     { error: "Errore del server: #{e.message}" }.to_json
   end
 end
+
+delete '/delete_user/:id' do
+  begin
+    user_id = params[:id].to_i
+
+    user = User[user_id]
+
+    if user.nil?
+      halt 404, { error: "Utente non trovato" }.to_json
+    end
+
+    user.products.each(&:delete)
+
+    user.delete
+
+    status 200
+    { message: "Account e prodotti eliminati con successo" }.to_json
+
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
