@@ -4,10 +4,26 @@ GEM
     base64 (0.2.0)
     bcrypt (3.1.20)
     bigdecimal (3.1.8)
+    date (3.3.4)
     json (2.7.2)
+    mail (2.8.1)
+      mini_mime (>= 0.1.1)
+      net-imap
+      net-pop
+      net-smtp
+    mini_mime (1.1.5)
     multi_json (1.15.0)
     mustermann (3.0.3)
       ruby2_keywords (~> 0.0.1)
+    net-imap (0.3.7)
+      date
+      net-protocol
+    net-pop (0.1.2)
+      net-protocol
+    net-protocol (0.2.2)
+      timeout
+    net-smtp (0.5.0)
+      net-protocol
     pg (1.5.8)
     rack (2.2.9)
     rack-cors (2.0.2)
@@ -16,6 +32,7 @@ GEM
       base64 (>= 0.1.0)
       rack (~> 2.2, >= 2.2.4)
     ruby2_keywords (0.0.5)
+    securerandom (0.3.1)
     sequel (5.84.0)
       bigdecimal
     sinatra (3.2.0)
@@ -30,6 +47,7 @@ GEM
       sinatra (= 3.2.0)
       tilt (~> 2.0)
     tilt (2.4.0)
+    timeout (0.4.1)
 
 PLATFORMS
   ruby
@@ -37,8 +55,10 @@ PLATFORMS
 DEPENDENCIES
   bcrypt
   json
+  mail
   pg
   rack-cors
+  securerandom
   sequel
   sinatra
   sinatra-contrib

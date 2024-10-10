@@ -13,3 +13,5 @@ gem "bcrypt"
 gem "json"
 # Implementazione per gestire CORS Policy
 gem "rack-cors"
+gem "mail"
+gem "securerandom"

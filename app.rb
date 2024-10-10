@@ -4,6 +4,8 @@ require "sequel"
 require "bcrypt"
 require "json"
 require "rack/cors"
+require "mail"
+require "securerandom"
 
 # CORS Policy per autorizzare il front-end ad effettuare chiamate verso questo endpoint(http://localhost:4567)
 use Rack::Cors do
@@ -35,7 +37,7 @@ DB.create_table?(:users) do
   String :name, null: false
   String :surname, null: false
   Date :date_of_birth, null: false
-  String :reset_password, null: true
+  String :reset_token, null: true
   DateTime :reset_sent_at, null: true
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
 end
@@ -373,7 +375,41 @@ end
 post '/request_password_reset' do
   begin
 
-    puts('Request Reset Passowrd')
+    data = JSON.parse(request.body.read)
+    email = data["email"]
+
+    user = User.where(email: email).first
+
+    if user
+      user.update(
+        reset_token: SecureRandom.hex(10),
+        reset_sent_at: Time.now
+      )
+    
+      options = {
+        address: "smtp.gmail.com",
+        port: 587,
+        user_name: 'lorenzodegiorgi2004@gmail.com',
+        password: 'fchw wium igef cvun',
+        authentication: 'plain',
+        enable_starttls_auto: true
+      }
+
+      Mail.defaults do
+        delivery_method :smtp, options
+      end
+
+      Mail.deliver do
+        to user.email
+        from 'lorenzodegiorgi2004@gmail.com'
+        subject 'Password Reset Request'
+        body "To reset your password, click the link below:\n\nhttp://localhost:3000/reset_password?token=#{user.reset_token}"
+      end
+      status 200
+      { message: "Email inviata con successo." }.to_json
+    else
+      halt 404, { error: "Email non trovata." }.to_json
+    end
 
   rescue JSON::ParserError => e
     halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
