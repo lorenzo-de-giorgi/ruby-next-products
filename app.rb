@@ -372,7 +372,22 @@ post '/request_password_reset' do
   begin
 
     puts('Request Reset Passowrd')
-    
+
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
+
+post '/reset_password' do
+  begin
+
+    puts('Reset Passowrd')
+
   rescue JSON::ParserError => e
     halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
   rescue => e
