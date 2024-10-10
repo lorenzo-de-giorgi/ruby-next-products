@@ -35,6 +35,8 @@ DB.create_table?(:users) do
   String :name, null: false
   String :surname, null: false
   Date :date_of_birth, null: false
+  String :reset_password, null: true
+  DateTime :reset_sent_at, null: true
   DateTime :created_at, default: Sequel::CURRENT_TIMESTAMP
 end
 
@@ -56,10 +58,10 @@ DB.create_table?(:products) do
 end
 
 # aggiunti cami per resettare password
-DB.alter_table(:users) do
-  add_column :reset_password, String
-  add_column :reset_sent_at, DateTime
-end
+# DB.alter_table(:users) do
+#   add_column :reset_password, String
+#   add_column :reset_sent_at, DateTime
+# end
 
 # DB.alter_table(:products) do
 #   drop_constraint(:products_product_type_id_key, if_exists: true)
