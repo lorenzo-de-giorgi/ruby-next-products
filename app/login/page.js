@@ -35,6 +35,7 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="d-flex flex-column">
                 <input value={username} onChange={(e) => setUsername(e.target.value)} type="text" placeholder="Username" required className="form-control p-2 mb-3 mt-3"/>
                 <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" required className="form-control p-2"/>
+                <p className="text-center mt-4">Hai dimenticato la password? <Link href="/reset_password">Reimposta</Link></p>
                 <Button type="submit" className="mt-3">Login</Button>
             </form>
             <p className="text-center mt-4">Non sei ancora registrato? <Link href="/register">Registrati</Link></p>
