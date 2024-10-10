@@ -404,7 +404,7 @@ post '/request_password_reset' do
         to user.email
         from 'lorenzodegiorgi2004@gmail.com'
         subject 'Password Reset Request'
-        body "To reset your password, click the link below:\n\nhttp://localhost:3000/reset_password?token=#{user.reset_token}"
+        body "To reset your password, click the link below:\n\nhttp://localhost:3000/update_password?token=#{user.reset_token}"
       end
       status 200
       { message: "Email inviata con successo." }.to_json
@@ -425,7 +425,24 @@ end
 post '/reset_password' do
   begin
 
-    puts('Reset Passowrd')
+    data = JSON.parse(request.body.read)
+    token = data["token"]
+    new_password = data["new_password"]
+
+    user = User.where(reset_token: token).first
+
+    if user && Time.now - user.reset_sent_at < 3600
+      hashed_password = BCrypt::Password.create(new_password)
+      user.update(
+        password_hash: hashed_password,
+        reset_token: nil,
+        reset_sent_at: nil
+      )
+      status 200
+      { message: "Password aggiornata con successo." }.to_json
+    else
+      halt 404, { error: "Token non valido o scaduto." }.to_json
+    end
 
   rescue JSON::ParserError => e
     halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
