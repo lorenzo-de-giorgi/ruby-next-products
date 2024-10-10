@@ -6,6 +6,7 @@ require "json"
 require "rack/cors"
 require "mail"
 require "securerandom"
+require 'dotenv/load'
 
 # CORS Policy per autorizzare il front-end ad effettuare chiamate verso questo endpoint(http://localhost:4567)
 use Rack::Cors do
@@ -387,10 +388,10 @@ post '/request_password_reset' do
       )
     
       options = {
-        address: "smtp.gmail.com",
-        port: 587,
-        user_name: 'lorenzodegiorgi2004@gmail.com',
-        password: 'fchw wium igef cvun',
+        address: ENV['SMTP_ADDRESS'],
+        port: ENV['SMTP_PORT'],
+        user_name: ENV['SMTP_USER_NAME'],
+        password: ENV['SMTP_PASSWORD'],
         authentication: 'plain',
         enable_starttls_auto: true
       }
