@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Button } from 'react-bootstrap';
 
 export default function UpdatePassword() {
     const [newPassword, setNewPassword] = useState('');
@@ -43,20 +44,13 @@ export default function UpdatePassword() {
 
   return (
     <div>
-      <h1>Update Password</h1>
-      <form onSubmit={handleSubmit}>
-        <label>
-          New Password:
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
-        </label>
-        <button type="submit">Update Password</button>
+      <h1 className='text-center'>Update Password</h1>
+      <form onSubmit={handleSubmit} className='text-center mt-5'>
+        <label className="form-label">Nuova Password:</label>
+        <input type="password" value={newPassword} className="form-control" onChange={(e) => setNewPassword(e.target.value)} required style={{ width: "350px", margin: "0 auto", display: "block" }}  />
+        <Button className='mt-4 btn' type="submit">Aggiorna Password</Button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className='text-center mt-3 text-danger'>{message}</p>}
     </div>
   );
 }

@@ -40,3 +40,9 @@ a {
     color-scheme: dark;
   }
 }
+
+.input-style{
+  width: 350px;
+  margin: 0 auto;
+  display: block;
+}
