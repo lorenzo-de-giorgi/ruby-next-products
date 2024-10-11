@@ -9,6 +9,7 @@ import '../globals.css';
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [notification, setNotification] = useState({ message: '', type: '' });
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -21,16 +22,23 @@ export default function LoginPage() {
         });
 
         if (result?.error) {
-            alert(`Login fallito: ${result.error}`);
+            setNotification({ message: `Login fallito: ${result.error}`, type: 'error' });
         } else {
-            window.location.href = '/products';
-            alert('Login avvenuto con successo!');
+            setNotification({ message: 'Login avvenuto con successo!', type: 'success' });
+            setTimeout(() => {
+                window.location.href = '/products';
+            }, 2000); // Redirect after 2 seconds
         }
     }
 
     return (
         <div className="container">
             <h1 className="text-center">Login</h1>
+            {notification.message && (
+                <div className={`notification ${notification.type}`}>
+                    {notification.message}
+                </div>
+            )}
             <form onSubmit={handleLogin} className="d-flex flex-column">
                 <input value={username} onChange={(e) => setUsername(e.target.value)} type="text" placeholder="Username" required className="form-control p-2 mb-3 mt-3 input-style"/>
                 <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" required className="form-control p-2 input-style"/>

@@ -19,6 +19,7 @@ export default function Inventory() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { data: session, status } = useSession();
+    const [notification, setNotification] = useState({ message: '', type: '' });
 
     // Stati per gestire la visibilità dei diversi Offcanvas
     const [showCreationOffCanvas, setShowCreationOffCanvas] = useState(false);
@@ -54,6 +55,15 @@ export default function Inventory() {
     const handleSelectChange = (e) => setSelectedType(e.target.value);
 
     useEffect(() => {
+
+        if (notification.message) {
+            const timer = setTimeout(() => {
+                setNotification({ message: '', type: '' });
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
+
         if (status === "loading") return;
         if (!session) window.location.href = '/login';;
 
@@ -77,13 +87,13 @@ export default function Inventory() {
 
         fetchProductTypes();
         fetchProducts();
-    }, [session, status]);
+    }, [session, status, notification]);
 
     const handleProductCreation = async (e) => {
         e.preventDefault();
 
         if (!name || !description || !selectedType) {
-            alert("Compila tutti i campi obbligatori");
+            setNotification({ message: `Compila tutti i campi obbligatori`, type: 'error' });
             return;
         }
 
@@ -102,15 +112,15 @@ export default function Inventory() {
             });
 
             if (response.status === 201) {
-                alert('Prodotto creato con successo');
+                setNotification({ message: `Prodotto creato con successo`, type: 'success' });
                 handleCloseCreationOffCanvas();
-                window.location.href = '/login';
+                window.location.href = '/products';
             } else {
-                alert(`Errore: ${response.data.error}`);
+                setNotification({ message: `Errore: ${response.data.error}`, type: 'error' });
             }
         } catch (error) {
             console.error("Errore durante la creazione del prodotto", error);
-            alert("Errore durante la creazione del prodotto");
+            setNotification({ message: "Errore durante la creazione del prodotto", type: 'error' });
         }
     };
 
@@ -118,7 +128,7 @@ export default function Inventory() {
         e.preventDefault();
 
         if (!name || !description || !selectedType) {
-            alert("Compila tutti i campi obbligatori");
+            setNotification({ message: "Compila tutti i campi obbligatori", type: 'error' });
             return;
         }
 
@@ -137,15 +147,15 @@ export default function Inventory() {
             });
 
             if (response.status === 200) {
-                alert('Prodotto aggiornato con successo');
+                setNotification({ message: 'Prodotto aggiornato con successo', type: 'success' });
                 handleCloseUpdateOffCanvas();
                 window.location.href = '/products';
             } else {
-                alert(`Errore: ${response.data.error}`);
+                setNotification({ message: `Errore: ${response.data.error}`, type: 'error' });
             }
         } catch (error) {
             console.error("Errore durante l'aggiornamento del prodotto", error);
-            alert("Errore durante l'aggiornamento del prodotto");
+            setNotification({ message: "Errore durante l'aggiornamento del prodotto", type: 'error' });
         }
     };
 
@@ -154,14 +164,14 @@ export default function Inventory() {
             try {
                 const response = await axios.delete(`http://localhost:4567/delete_product/${productId}`);
                 if (response.status === 204) {
-                    alert('Prodotto eliminato con successo');
+                    setNotification({ message: 'Prodotto eliminato con successo', type: 'success' });
                     setProducts(products.filter(product => product.id !== productId));
                 } else {
-                    alert(`Errore: ${response.data.error}`);
+                    setNotification({ message: `Errore: ${response.data.error}`, type: 'error' });
                 }
             } catch (error) {
                 console.error("Errore durante l'eliminazione del prodotto", error);
-                alert("Errore durante l'eliminazione del prodotto");
+                setNotification({ message: "Errore durante l'eliminazione del prodotto", type: 'error' });
             }
         }
     };
@@ -237,6 +247,12 @@ export default function Inventory() {
                     </Offcanvas.Body>
                 </Offcanvas>
             </div>
+
+            {notification.message && (
+                <div className={`notification ${notification.type}`}>
+                    {notification.message}
+                </div>
+            )}
 
             <table className="table table-striped mt-5">
                 <thead>

@@ -13,34 +13,35 @@ export default function RegisterPage() {
     const [surname, setSurname] = useState('');
     const [date_of_birth, setBirthday] = useState('');
     const today = new Date().toISOString().split('T')[0];
+    const [notification, setNotification] = useState({ message: '', type: '' });
 
     const handleRegister = async (e) => {
         e.preventDefault();
     
         if (!password) {
-            alert("La password è obbligatoria.");
+            setNotification({ message: 'La password è obbligatoria!', type: 'error' });
             return;
         }
     
         if (password.length < 8) {
-            alert("La password deve essere di lunghezza maggiore di 8 caratteri.");
+            setNotification({ message: 'La password deve essere di lunghezza maggiore di 8 caratteri.', type: 'error' });
             return;
         }
     
         const hasUpperCase = /[A-Z]/.test(password);
         if (!hasUpperCase) {
-            alert("La password deve contenere almeno una lettera maiuscola.");
+            setNotification({ message: 'La password deve contenere almeno una lettera maiuscola.', type: 'error' });
             return;
         }
     
         const hasSpecialChar = /[\W_]/.test(password);
         if (!hasSpecialChar) {
-            alert("La password deve avere almeno un carattere speciale.");
+            setNotification({ message: 'La password deve avere almeno un carattere speciale.', type: 'error' });
             return;
         }
     
         if (password !== confirmPassword) {
-            alert('Le password non corrispondono!');
+            setNotification({ message: 'Le password non corrispondono!', type: 'error' });
             return;
         }
     
@@ -62,18 +63,18 @@ export default function RegisterPage() {
     
             console.log('Response Status:', response.status);
             if (response.status === 201) {
-                alert('Registrazione avvenuta con successo!');
+                setNotification({ message: 'Registrazione avvenuta con successo!', type: 'success' });
                 console.log("Navigating to /login");
                 window.location.href = '/login';
             } else {
-                alert(`Registration failed: ${response.data.message}`);
+                setNotification({ message: `Registration failed: ${response.data.message}`, type: 'error' });
             }
         } catch (error) {
             console.error('An error occurred during registration:', error);
             if (error.response) {
-                alert(`Registration failed: ${error.response.data.message}`);
+                setNotification({ message: `Registration failed: ${error.response.data.message}`, type: 'error' });
             } else {
-                alert('An error occurred during registration. Please try again later.');
+                setNotification({ message: 'An error occurred during registration. Please try again later.', type: 'error' });
             }
         }
     };
@@ -81,7 +82,12 @@ export default function RegisterPage() {
     return(
         <div className="container">
             <h1 className="text-center mb-3">Register</h1>
-            <form className="d-flex flex-column" onSubmit={handleRegister}>
+            {notification.message && (
+                <div className={`notification ${notification.type}`}>
+                    {notification.message}
+                </div>
+            )}
+            <form className="d-flex flex-column mt-4" onSubmit={handleRegister}>
 
                 <div className="row mb-3">
                     <div className="col">
