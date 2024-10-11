@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button, Offcanvas, FormSelect, Modal } from "react-bootstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -19,8 +18,6 @@ export default function Inventory() {
     const [showDetail, setShowDetail] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    const router = useRouter();
     const { data: session, status } = useSession();
 
     // Stati per gestire la visibilità dei diversi Offcanvas
@@ -58,7 +55,7 @@ export default function Inventory() {
 
     useEffect(() => {
         if (status === "loading") return;
-        if (!session) router.push('/login');
+        if (!session) window.location.href = '/login';;
 
         const fetchProductTypes = async () => {
             try {
@@ -80,7 +77,7 @@ export default function Inventory() {
 
         fetchProductTypes();
         fetchProducts();
-    }, [session, status, router]);
+    }, [session, status]);
 
     const handleProductCreation = async (e) => {
         e.preventDefault();
@@ -107,7 +104,7 @@ export default function Inventory() {
             if (response.status === 201) {
                 alert('Prodotto creato con successo');
                 handleCloseCreationOffCanvas();
-                router.reload();
+                window.location.href = '/login';
             } else {
                 alert(`Errore: ${response.data.error}`);
             }
@@ -142,7 +139,7 @@ export default function Inventory() {
             if (response.status === 200) {
                 alert('Prodotto aggiornato con successo');
                 handleCloseUpdateOffCanvas();
-                setProducts(products.map(p => (p.id === selectedProduct.id ? response.data : p)));
+                window.location.href = '/products';
             } else {
                 alert(`Errore: ${response.data.error}`);
             }

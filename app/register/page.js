@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from 'next/navigation';
 import axios from "axios";
 
 export default function RegisterPage() {
@@ -13,70 +12,72 @@ export default function RegisterPage() {
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
     const [date_of_birth, setBirthday] = useState('');
-    const router = useRouter();
     const today = new Date().toISOString().split('T')[0];
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        // console.log per verificare il corretto recupero dei dati
-        // console.log(username, email, password, name, surname, date_of_birth);
-
+    
         if (!password) {
-            return res.status(400).json({ error: "La password è obbligatoria." });
+            alert("La password è obbligatoria.");
+            return;
         }
-
+    
         if (password.length < 8) {
-            return alert("La password deve essere di lunghezza maggiore di 8 caratteri.");
+            alert("La password deve essere di lunghezza maggiore di 8 caratteri.");
+            return;
         }
-
+    
         const hasUpperCase = /[A-Z]/.test(password);
         if (!hasUpperCase) {
-          return alert("La password deve contenere almeno una lettera maiuscola.");
+            alert("La password deve contenere almeno una lettera maiuscola.");
+            return;
         }
-
-        const hasSpecialChar = /[\W_]/.test(password); // `\W` è usato per i caratteri non alfanumerici
+    
+        const hasSpecialChar = /[\W_]/.test(password);
         if (!hasSpecialChar) {
-          return alert("La password deve avere almeno un carattere speciale.");
+            alert("La password deve avere almeno un carattere speciale.");
+            return;
         }
-
-        if(password !== confirmPassword){
+    
+        if (password !== confirmPassword) {
             alert('Le password non corrispondono!');
             return;
         }
-
+    
         const formData = {
             username,
             email,
             password,
             name,
             surname,
-            date_of_birth
-        }
-
+            date_of_birth,
+        };
+    
         try {
             const response = await axios.post('http://localhost:4567/register', formData, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-
-            if(response.status === 200){
+    
+            console.log('Response Status:', response.status);
+            if (response.status === 201) {
                 alert('Registrazione avvenuta con successo!');
-                router.push('/login');
+                console.log("Navigating to /login");
+                window.location.href = '/login';
             } else {
                 alert(`Registration failed: ${response.data.message}`);
             }
         } catch (error) {
             console.error('An error occurred during registration:', error);
             if (error.response) {
-                // Il server ha restituito una risposta con un codice di stato diverso da 2xx
                 alert(`Registration failed: ${error.response.data.message}`);
             } else {
-                // Errore nella richiesta
                 alert('An error occurred during registration. Please try again later.');
             }
         }
-    }
+    };
+    
     return(
         <div className="container">
             <h1 className="text-center mb-3">Register</h1>

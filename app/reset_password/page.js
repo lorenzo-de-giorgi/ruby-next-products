@@ -16,6 +16,10 @@ export default function ResetPassword() {
       body: JSON.stringify({ email }),
     });
 
+    if(response.status == 200) {
+      window.location.href = '/login';
+    }
+
     const data = await response.json();
     setMessage(data.message || data.error);
   };

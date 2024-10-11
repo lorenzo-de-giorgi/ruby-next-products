@@ -33,10 +33,14 @@ export default function UpdatePassword() {
         }
 
         const response = await fetch('http://localhost:4567/reset_password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, new_password: newPassword }),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, new_password: newPassword }),
         });
+
+        if(response.status == 200) {
+          window.location.href = '/login';
+        }
 
         const data = await response.json();
         setMessage(data.message || data.error);
