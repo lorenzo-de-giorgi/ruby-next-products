@@ -183,6 +183,113 @@ get '/product_types' do
   end  
 end
 
+# Rotta per ottenere i dati di un utente specifico
+get '/user/:id' do
+  begin
+    user_id = params[:id].to_i
+
+    # Trova l'utente tramite l'ID
+    user = User[user_id]
+
+    # Se l'utente non esiste, restituisce un errore 404
+    if user.nil?
+      halt 404, { error: "Utente non trovato" }.to_json
+    end
+
+    # Restituisce i dettagli dell'utente
+    status 200
+    {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      name: user.name,
+      surname: user.surname,
+      date_of_birth: user.date_of_birth
+    }.to_json
+
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
+
+
+# rotta per modificare dati utente
+put '/update_profile/:id' do
+  begin
+    user_id = params[:id].to_i
+    data = JSON.parse(request.body.read)
+
+    # Recupera i dati che l'utente vuole modificare
+    username = data["username"]
+    email = data["email"]
+    name = data["name"]
+    surname = data["surname"]
+    date_of_birth = data["date_of_birth"]
+    password = data["password"]
+
+    # Recupera l'utente dal database
+    user = User[user_id]
+
+    # Verifica se l'utente esiste
+    if user.nil?
+      halt 404, { error: "Utente non trovato" }.to_json
+    end
+
+    # Verifica che almeno un campo da aggiornare sia presente
+    if [username, email, name, surname, date_of_birth, password].all?(&:nil?)
+      halt 400, { error: "Nessun campo fornito per l'aggiornamento" }.to_json
+    end
+
+    # Aggiorna i campi che sono stati forniti
+    user.update(
+      username: username || user.username,
+      email: email || user.email,
+      name: name || user.name,
+      surname: surname || user.surname,
+      date_of_birth: date_of_birth || user.date_of_birth
+    )
+
+    # Se viene fornita una nuova password, aggiorna l'hash della password
+    if password
+      if password.length < 8
+        halt 400, json(error: "La password deve essere di lunghezza maggiore di 8 caratteri")
+      elsif password !~ /[A-Z]/
+        halt 400, json(error: "La password deve contenere almeno una lettera maiuscola")
+      elsif password !~ /[\W_]/
+        halt 400, json(error: "La password deve avere almeno un carattere speciale")
+      end
+      hashed_password = BCrypt::Password.create(password)
+      user.update(password_hash: hashed_password)
+    end
+
+    status 200
+    {
+      message: "Profilo aggiornato con successo",
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        date_of_birth: user.date_of_birth
+      }
+    }.to_json
+
+  rescue Sequel::UniqueConstraintViolation
+    halt 409, { error: "Nome utente o email già in uso." }.to_json
+  rescue JSON::ParserError => e
+    halt 400, { error: "Formato JSON non valido: #{e.message}" }.to_json
+  rescue => e
+    puts "Errore del server: #{e.message}"
+    status 500
+    content_type :json
+    { error: "Errore del server: #{e.message}" }.to_json
+  end
+end
+
 # Rotta per la creazione di un prodotto
 post '/create_product' do
   begin
